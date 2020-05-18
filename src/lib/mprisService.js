@@ -138,17 +138,19 @@ module.exports = (win, player, app) => {
       case 'setVolume':
         mprisPlayer.volume = (args[1] / 100);
         break;
-      case 'trackInfo':
-        mprisPlayer.metadata = {
+      case 'trackInfo': {
+        const metadata = {
           'xesam:artist': [args[1].artist],
           'xesam:title': args[1].title,
           'xesam:url': `https://www.youtube.com/watch?v=${args[1].id}`,
           'mpris:trackid': mprisPlayer.objectPath('track/0'),
-          'mpris:artUrl': await mprisCover(args[1].thumbnail),
           'mpris:length': args[1].duration * 1e6, // in microseconds
         };
+        try { metadata['mpris:artUrl'] = await mprisCover(args[1].id); } catch (error) { console.error(error); }
+        mprisPlayer.metadata = metadata;
         logger.media(`Track Info:\n${JSON.stringify(mprisPlayer.metadata, null, 2)}`);
         break;
+      }
       case 'seekTo':
         mprisPlayer.seeked(args[1] * 1e6); // in microseconds
         break;
